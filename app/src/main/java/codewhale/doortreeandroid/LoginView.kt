@@ -10,6 +10,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+import kotlinx.coroutines.launch
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -30,6 +41,7 @@ import android.net.Uri
 @Composable
 fun LoginView(authSession: AuthSessionStore) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     var showEmailAuth by remember { mutableStateOf(false) }
     var authAlertMessage by remember { mutableStateOf("") }
 
@@ -70,6 +82,43 @@ fun LoginView(authSession: AuthSessionStore) {
                         onClick = { showEmailAuth = true }
                     )
                 }
+
+                GradientButton(
+                    title = L("auth.google.continue"),
+                    onClick = {
+                        scope.launch {
+                            try {
+                                val option = GetSignInWithGoogleOption.Builder(
+                                    context.getString(R.string.default_web_client_id)
+                                ).build()
+                                val request = GetCredentialRequest.Builder()
+                                    .addCredentialOption(option)
+                                    .build()
+                                val credential = CredentialManager.create(context)
+                                    .getCredential(context, request).credential
+                                if (credential !is CustomCredential || credential.type != TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                                    authAlertMessage = L("auth.google.unavailable")
+                                } else {
+                                    val idToken = GoogleIdTokenCredential.createFrom(credential.data).idToken
+                                    authSession.signInWithGoogle(idToken) { error ->
+                                        if (error != null) authAlertMessage = error
+                                    }
+                                }
+                            } catch (_: GetCredentialCancellationException) {
+                                // The user dismissed the Google account picker.
+                            } catch (_: Exception) {
+                                authAlertMessage = L("auth.google.unavailable")
+                            }
+                        }
+                    },
+                    content = {
+                        Image(
+                            painter = painterResource(R.drawable.google_g),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                )
 
                 GradientButton(
                     title = L("auth.email.continue"),

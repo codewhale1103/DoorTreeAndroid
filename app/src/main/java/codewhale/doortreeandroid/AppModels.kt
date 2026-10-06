@@ -65,6 +65,10 @@ data class TenantRentPaymentState(
     val lastError: String?,
     val lastSetupAt: String?,
     val lastSetupError: String?,
+    val padAuthorizationEmail: String?,
+    val padAuthorizationExpiresAt: String?,
+    val padAuthorizationId: String?,
+    val padAuthorizationSentAt: String?,
     val paymentMethodBrand: String?,
     val paymentMethodLabel: String?,
     val paymentMethodLast4: String?,
@@ -113,6 +117,9 @@ data class TenantRentPaymentState(
     val isBankAutopayVerificationPending: Boolean
         get() = selectedMethodType == "acss_debit" && status == "verification_pending"
 
+    val isBankAuthorizationPending: Boolean
+        get() = selectedMethodType == "acss_debit" && status == "authorization_pending"
+
     val hasStoredStripeProfile: Boolean
         get() = !stripeCustomerId.isNullOrBlank() ||
             !stripePaymentMethodId.isNullOrBlank() ||
@@ -130,6 +137,10 @@ data class TenantRentPaymentState(
             lastError = null,
             lastSetupAt = null,
             lastSetupError = null,
+            padAuthorizationEmail = null,
+            padAuthorizationExpiresAt = null,
+            padAuthorizationId = null,
+            padAuthorizationSentAt = null,
             paymentMethodBrand = null,
             paymentMethodLabel = null,
             paymentMethodLast4 = null,
@@ -277,12 +288,19 @@ data class LandlordRentCollectionSettings(
 
 data class InteracTransferDetails(
     val id: String,
+    val chargeId: String,
+    val invoiceNumber: String,
+    val rentMonth: String,
     val recipientEmail: String,
     val recipientName: String,
     val amount: String,
+    val amountEntry: String,
     val dueDate: String,
     val reference: String,
-    val autodepositEnabled: Boolean
+    val propertyName: String,
+    val unitNumber: String,
+    val autodepositEnabled: Boolean,
+    val status: String
 )
 
 data class RentLedgerEntry(

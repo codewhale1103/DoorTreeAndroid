@@ -49,6 +49,8 @@ fun DoorTreeAndroidApp() {
 
     val authSession = remember { AuthSessionStore(context) }
     val tenantDataStore = remember { TenantDataStore(authSession, context.applicationContext) }
+    val landlordDataStore = remember { LandlordDataStore() }
+    var accountRole by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
     var showSplash by remember { mutableStateOf(true) }
@@ -88,7 +90,9 @@ fun DoorTreeAndroidApp() {
     }
 
     LaunchedEffect(authSession.user?.uid) {
-        tenantDataStore.handleAuthState(authSession.user?.uid)
+        accountRole = null
+        tenantDataStore.handleAuthState(null)
+        landlordDataStore.stop()
         val uid = authSession.user?.uid?.trim().orEmpty()
         if (uid.isEmpty()) {
             didCheckEula = true
@@ -96,6 +100,17 @@ fun DoorTreeAndroidApp() {
             hasAcceptedEula = true
             showEulaDialog = false
         } else {
+            val roleResult = runCatching {
+                database.child("users").child(uid).child("userType").get().await()
+                    .getValue(String::class.java)?.trim()?.lowercase()
+            }
+            accountRole = when {
+                roleResult.isFailure -> "unavailable"
+                roleResult.getOrNull() == "landlord" -> "landlord"
+                else -> "tenant"
+            }
+            if (accountRole == "landlord") landlordDataStore.start(uid)
+            else if (accountRole == "tenant") tenantDataStore.handleAuthState(uid)
             didCheckEula = false
             didHandleEulaDecision = false
             hasAcceptedEula = false
@@ -136,6 +151,37 @@ fun DoorTreeAndroidApp() {
                 authSession.user != null && !hasAcceptedEula -> AuthLoadingOverlay(
                     title = "Agreement required",
                     subtitle = "Please review and accept the agreement to continue."
+                )
+                authSession.user != null && accountRole == null -> AuthLoadingOverlay(
+                    title = "Loading your account",
+                    subtitle = "Finding your workspace."
+                )
+                authSession.user != null && accountRole == "unavailable" -> TenantLoadFailureView(
+                    title = "Account unavailable",
+                    message = "We couldn't load your account type. Check your connection and try again.",
+                    onRetry = {
+                        coroutineScope.launch {
+                            val uid = authSession.user?.uid?.trim().orEmpty()
+                            if (uid.isNotEmpty()) {
+                                val role = runCatching {
+                                    database.child("users").child(uid).child("userType").get().await()
+                                        .getValue(String::class.java)?.trim()?.lowercase()
+                                }
+                                accountRole = when {
+                                    role.isFailure -> "unavailable"
+                                    role.getOrNull() == "landlord" -> "landlord"
+                                    else -> "tenant"
+                                }
+                                if (accountRole == "landlord") landlordDataStore.start(uid)
+                                else if (accountRole == "tenant") tenantDataStore.handleAuthState(uid)
+                            }
+                        }
+                    },
+                    onSignOut = authSession::signOut
+                )
+                authSession.user != null && accountRole == "landlord" -> LandlordContentView(
+                    landlordDataStore = landlordDataStore,
+                    onSignOut = authSession::signOut
                 )
                 authSession.user != null && tenantDataStore.isLoading && tenantDataStore.tenantRecord == null -> AuthLoadingOverlay(
                     title = L("Loading your account"),
@@ -376,6 +422,7 @@ private fun ForceUpdateOverlay(onUpdate: () -> Unit) {
 
 @Composable
 private fun TenantLoadFailureView(
+    title: String = "Tenant data unavailable",
     message: String,
     onRetry: () -> Unit,
     onSignOut: () -> Unit
@@ -395,7 +442,7 @@ private fun TenantLoadFailureView(
             verticalArrangement = Arrangement.spacedBy(18.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = L("Tenant data unavailable"), color = DoorTreeTheme.textPrimary)
+            Text(text = L(title), color = DoorTreeTheme.textPrimary)
             Text(text = message, color = DoorTreeTheme.textSecondary)
             GradientButton(title = L("Try again"), onClick = onRetry)
             Text(

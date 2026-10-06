@@ -43,6 +43,18 @@ class FirebaseRestClient {
         )
     }
 
+    suspend fun signInWithGoogle(idToken: String): AuthResponse {
+        val postBody = "id_token=${URLEncoder.encode(idToken, StandardCharsets.UTF_8)}&providerId=google.com"
+        return postJson(
+            "https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=${FirebaseConfig.apiKey}",
+            buildJsonObject {
+                put("requestUri", JsonPrimitive("http://localhost"))
+                put("postBody", JsonPrimitive(postBody))
+                put("returnSecureToken", JsonPrimitive(true))
+            }
+        )
+    }
+
     suspend fun createEmailAccount(email: String, password: String): AuthResponse {
         return postJson(
             "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FirebaseConfig.apiKey}",
@@ -120,8 +132,14 @@ class FirebaseRestClient {
     }
 
     suspend fun fetchIsFirstLoginComplete(uid: String, idToken: String): Boolean {
-        val snapshot = fetchUser(uid, idToken)?.jsonObject ?: return false
-        return snapshot["isFirstLoginComplete"]?.jsonPrimitive?.booleanOrNull ?: false
+        val token = URLEncoder.encode(idToken, StandardCharsets.UTF_8.toString())
+        val userType = executeNullableJsonGet("${FirebaseConfig.databaseUrl}/users/$uid/userType.json?auth=$token")
+            ?.jsonPrimitive?.content?.trim()
+        if (userType.equals("landlord", ignoreCase = true)) {
+            return true
+        }
+        return executeNullableJsonGet("${FirebaseConfig.databaseUrl}/users/$uid/isFirstLoginComplete.json?auth=$token")
+            ?.jsonPrimitive?.booleanOrNull ?: false
     }
 
     suspend fun markFirstLoginComplete(uid: String, idToken: String): Boolean {

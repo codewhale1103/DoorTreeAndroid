@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "714077093692-t8gkjnbgoc7j23rut84pkpa0q3q1map8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "codewhale.doortreeandroid",
+            "certificate_hash": "7912050268ed6e600bc6e57c3ef6942726f8ef73"
+          }
+        },
+        {
           "client_id": "714077093692-de2795aot6sh3k17r1fiulm8tvl0psop.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -32,10 +40,10 @@
               "client_type": 3
             },
             {
-              "client_id": "714077093692-l8icfts49lgdshm5puijhgfrpgbrc026.apps.googleusercontent.com",
+              "client_id": "714077093692-37uc5n156dmltnuddnl33ro6vahc0gjs.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "codewhale.DoorTreeiOS"
+                "bundle_id": "com.codewhale.Beluga"
               }
             }
           ]

@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -119,6 +120,41 @@ class AuthSessionStore(context: Context) {
             }
 
             Log.d(TAG, "signInWithEmail finished success=${message == null} message=${message ?: "none"}")
+            isAuthenticating = false
+            completion(message)
+        }
+    }
+
+    fun signInWithGoogle(idToken: String, completion: (String?) -> Unit) {
+        isAuthenticating = true
+        scope.launch {
+            val message = runCatching {
+                val response = restClient.signInWithGoogle(idToken)
+                val firebaseUser = firebaseAuth.signInWithCredential(
+                    GoogleAuthProvider.getCredential(idToken, null)
+                ).await().user ?: error("Google sign-in did not return a user")
+                check(response.localId == firebaseUser.uid) { "Google account mismatch" }
+                check(response.idToken.isNotBlank() && response.refreshToken.isNotBlank()) {
+                    "Google sign-in did not return a session"
+                }
+                currentSession = PersistedSession(
+                    uid = response.localId,
+                    email = response.email.ifBlank { firebaseUser.email.orEmpty() },
+                    idToken = response.idToken,
+                    refreshToken = response.refreshToken,
+                    expiresAtEpochSeconds = Instant.now().epochSecond + response.expiresIn.toLong(),
+                    provider = "google.com"
+                )
+                persistSession()
+                when (resolveAccess(lookupEmail = response.email, isSessionRestore = false)) {
+                    AccessResolution.Allowed, AccessResolution.NeedsFirstLoginReset -> null
+                    AccessResolution.NeedsEmailVerification -> L("auth.verify.before_continue")
+                    AccessResolution.Failure -> L("auth.error.sign_in_unavailable")
+                }
+            }.getOrElse { throwable ->
+                Log.e(TAG, "signInWithGoogle failed: ${debugThrowable(throwable)}", throwable)
+                readableMessage(throwable, fallbackKey = "auth.google.unavailable")
+            }
             isAuthenticating = false
             completion(message)
         }
@@ -339,6 +375,16 @@ class AuthSessionStore(context: Context) {
             user = null
         }
 
+        if (session.provider == "google.com") {
+            clearPersistedFirstLoginResetRequest()
+            pendingVerificationEmail = null
+            pendingFirstLoginResetEmail = null
+            pendingFirstLoginResetUID = null
+            user = AuthUser(uid = session.uid, email = session.email)
+            if (isSessionRestore) isRestoringSession = false
+            return AccessResolution.Allowed
+        }
+
         val isFirstLoginComplete = runCatching {
             Log.d(TAG, "resolveAccess fetching isFirstLoginComplete uid=${session.uid.takeLast(6)} restore=$isSessionRestore")
             restClient.fetchIsFirstLoginComplete(session.uid, idToken)
@@ -496,7 +542,8 @@ class AuthSessionStore(context: Context) {
         val email: String,
         val idToken: String,
         val refreshToken: String,
-        val expiresAtEpochSeconds: Long
+        val expiresAtEpochSeconds: Long,
+        val provider: String = "password"
     )
 
     private enum class AccessResolution {

@@ -1,0 +1,31 @@
+[debug] [2026-10-06T01:30:05.480Z] ----------------------------------------------------------------------
+[debug] [2026-10-06T01:30:05.482Z] Command:       /opt/homebrew/Cellar/node/25.2.1/bin/node /opt/homebrew/bin/firebase apps:sdkconfig ANDROID 1:714077093692:android:5ae4b855643f69ba5ca839 --project doortree-44647 --out app/google-services.json
+[debug] [2026-10-06T01:30:05.482Z] CLI Version:   15.14.0
+[debug] [2026-10-06T01:30:05.482Z] Platform:      darwin
+[debug] [2026-10-06T01:30:05.482Z] Node Version:  v25.2.1
+[debug] [2026-10-06T01:30:05.482Z] Time:          Mon Oct 05 2026 21:30:05 GMT-0400 (Eastern Daylight Time)
+[debug] [2026-10-06T01:30:05.482Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-10-06T01:30:05.503Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-10-06T01:30:05.503Z] > authorizing via signed-in user (info@doortree.co)
+[debug] [2026-10-06T01:30:05.505Z] Checked if tokens are valid: true, expires at: 1791253649396
+[debug] [2026-10-06T01:30:05.505Z] Checked if tokens are valid: true, expires at: 1791253649396
+[debug] [2026-10-06T01:30:05.506Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/androidApps/1:714077093692:android:5ae4b855643f69ba5ca839/config [none]
+[debug] [2026-10-06T01:30:06.504Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/androidApps/1:714077093692:android:5ae4b855643f69ba5ca839/config 200
+[debug] [2026-10-06T01:30:06.505Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/androidApps/1:714077093692:android:5ae4b855643f69ba5ca839/config {"configFilename":"google-services.json","configFileContents":"ewogICJwcm9qZWN0X2luZm8iOiB7CiAgICAicHJvamVjdF9udW1iZXIiOiAiNzE0MDc3MDkzNjkyIiwKICAgICJmaXJlYmFzZV91cmwiOiAiaHR0cHM6Ly9kb29ydHJlZS00NDY0Ny1kZWZhdWx0LXJ0ZGIuZmlyZWJhc2Vpby5jb20iLAogICAgInByb2plY3RfaWQiOiAiZG9vcnRyZWUtNDQ2NDciLAogICAgInN0b3JhZ2VfYnVja2V0IjogImRvb3J0cmVlLTQ0NjQ3LmZpcmViYXNlc3RvcmFnZS5hcHAiCiAgfSwKICAiY2xpZW50IjogWwogICAgewogICAgICAiY2xpZW50X2luZm8iOiB7CiAgICAgICAgIm1vYmlsZXNka19hcHBfaWQiOiAiMTo3MTQwNzcwOTM2OTI6YW5kcm9pZDo1YWU0Yjg1NTY0M2Y2OWJhNWNhODM5IiwKICAgICAgICAiYW5kcm9pZF9jbGllbnRfaW5mbyI6IHsKICAgICAgICAgICJwYWNrYWdlX25hbWUiOiAiY29kZXdoYWxlLmRvb3J0cmVlYW5kcm9pZCIKICAgICAgICB9CiAgICAgIH0sCiAgICAgICJvYXV0aF9jbGllbnQiOiBbCiAgICAgICAgewogICAgICAgICAgImNsaWVudF9pZCI6ICI3MTQwNzcwOTM2OTItdDhna2puYmdvYzdqMjNydXQ4NHBrcGEwcTNxMW1hcDguYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLAogICAgICAgICAgImNsaWVudF90eXBlIjogMSwKICAgICAgICAgICJhbmRyb2lkX2luZm8iOiB7CiAgICAgICAgICAgICJwYWNrYWdlX25hbWUiOiAiY29kZXdoYWxlLmRvb3J0cmVlYW5kcm9pZCIsCiAgICAgICAgICAgICJjZXJ0aWZpY2F0ZV9oYXNoIjogIjc5MTIwNTAyNjhlZDZlNjAwYmM2ZTU3YzNlZjY5NDI3MjZmOGVmNzMiCiAgICAgICAgICB9CiAgICAgICAgfSwKICAgICAgICB7CiAgICAgICAgICAiY2xpZW50X2lkIjogIjcxNDA3NzA5MzY5Mi1kZTI3OTVhb3Q2c2gzazE3cjFmaXVsbTh0dmwwcHNvcC5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsCiAgICAgICAgICAiY2xpZW50X3R5cGUiOiAzCiAgICAgICAgfQogICAgICBdLAogICAgICAiYXBpX2tleSI6IFsKICAgICAgICB7CiAgICAgICAgICAiY3VycmVudF9rZXkiOiAiQUl6YVN5QzRBREdIUWxGdlQwOWxpYzZ0S2dvejFnSVhQb2cxV0tZIgogICAgICAgIH0KICAgICAgXSwKICAgICAgInNlcnZpY2VzIjogewogICAgICAgICJhcHBpbnZpdGVfc2VydmljZSI6IHsKICAgICAgICAgICJvdGhlcl9wbGF0Zm9ybV9vYXV0aF9jbGllbnQiOiBbCiAgICAgICAgICAgIHsKICAgICAgICAgICAgICAiY2xpZW50X2lkIjogIjcxNDA3NzA5MzY5Mi1kZTI3OTVhb3Q2c2gzazE3cjFmaXVsbTh0dmwwcHNvcC5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsCiAgICAgICAgICAgICAgImNsaWVudF90eXBlIjogMwogICAgICAgICAgICB9LAogICAgICAgICAgICB7CiAgICAgICAgICAgICAgImNsaWVudF9pZCI6ICI3MTQwNzcwOTM2OTItMzd1YzVuMTU2ZG1sdG51ZGRubDMzcm82dmFoYzBnanMuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLAogICAgICAgICAgICAgICJjbGllbnRfdHlwZSI6IDIsCiAgICAgICAgICAgICAgImlvc19pbmZvIjogewogICAgICAgICAgICAgICAgImJ1bmRsZV9pZCI6ICJjb20uY29kZXdoYWxlLkJlbHVnYSIKICAgICAgICAgICAgICB9CiAgICAgICAgICAgIH0KICAgICAgICAgIF0KICAgICAgICB9CiAgICAgIH0KICAgIH0KICBdLAogICJjb25maWd1cmF0aW9uX3ZlcnNpb24iOiAiMSIKfQ=="}
+[error] 
+[error] Error: app/google-services.json already exists
+[debug] [2026-10-06T01:30:16.503Z] ----------------------------------------------------------------------
+[debug] [2026-10-06T01:30:16.505Z] Command:       /opt/homebrew/Cellar/node/25.2.1/bin/node /opt/homebrew/bin/firebase apps:sdkconfig ANDROID 1:714077093692:android:5ae4b855643f69ba5ca839 --project doortree-44647 --out /tmp/doortree-google-services-updated.json
+[debug] [2026-10-06T01:30:16.505Z] CLI Version:   15.14.0
+[debug] [2026-10-06T01:30:16.505Z] Platform:      darwin
+[debug] [2026-10-06T01:30:16.505Z] Node Version:  v25.2.1
+[debug] [2026-10-06T01:30:16.505Z] Time:          Mon Oct 05 2026 21:30:16 GMT-0400 (Eastern Daylight Time)
+[debug] [2026-10-06T01:30:16.505Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-10-06T01:30:16.516Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-10-06T01:30:16.516Z] > authorizing via signed-in user (info@doortree.co)
+[debug] [2026-10-06T01:30:16.518Z] Checked if tokens are valid: true, expires at: 1791253649396
+[debug] [2026-10-06T01:30:16.518Z] Checked if tokens are valid: true, expires at: 1791253649396
+[debug] [2026-10-06T01:30:16.518Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/androidApps/1:714077093692:android:5ae4b855643f69ba5ca839/config [none]
+[debug] [2026-10-06T01:30:17.173Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/androidApps/1:714077093692:android:5ae4b855643f69ba5ca839/config 200

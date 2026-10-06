@@ -7054,19 +7054,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Recipient email: %1$@"
+            "value": "Send rent directly from your banking app to %1$@."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Courriel du destinataire : %1$@"
+            "value": "Envoyez le loyer depuis votre application bancaire à %1$@."
           }
         },
         "fr-CA": {
           "stringUnit": {
             "state": "translated",
-            "value": "Courriel du destinataire : %1$@"
+            "value": "Envoyez le loyer depuis votre application bancaire à %1$@."
           }
         }
       }
@@ -7077,19 +7077,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "One-Time Bank Transfer"
+            "value": "Interac e-Transfer"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Virement bancaire ponctuel"
+            "value": "Virement Interac"
           }
         },
         "fr-CA": {
           "stringUnit": {
             "state": "translated",
-            "value": "Virement bancaire ponctuel"
+            "value": "Virement Interac"
           }
         }
       }
@@ -7422,19 +7422,19 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "View Transfer Details"
+            "value": "Start Interac e-Transfer"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Voir les détails du virement"
+            "value": "Commencer le virement Interac"
           }
         },
         "fr-CA": {
           "stringUnit": {
             "state": "translated",
-            "value": "Voir les détails du virement"
+            "value": "Commencer le virement Interac"
           }
         }
       }

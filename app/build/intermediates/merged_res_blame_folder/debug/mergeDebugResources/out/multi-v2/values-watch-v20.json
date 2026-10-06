@@ -4,7 +4,7 @@
             "outputFile": "codewhale.doortreeandroid.app-mergeDebugResources-75:/values-watch-v20/values-watch-v20.xml",
             "map": [
                 {
-                    "source": "/Users/claudiopietrantonio/.gradle/caches/9.3.1/transforms/ab75ba08e7c7ad37798f4e9204c3f52c/transformed/appcompat-1.7.0/res/values-watch-v20/values-watch-v20.xml",
+                    "source": "/Users/shtu/.gradle/caches/9.3.1/transforms/ab75ba08e7c7ad37798f4e9204c3f52c/transformed/appcompat-1.7.0/res/values-watch-v20/values-watch-v20.xml",
                     "from": {
                         "startLines": "2,5,8",
                         "startColumns": "4,4,4",
@@ -23,7 +23,7 @@
                     }
                 },
                 {
-                    "source": "/Users/claudiopietrantonio/.gradle/caches/9.3.1/transforms/cef8fdc62ac0244aa4c067cf8402632a/transformed/play-services-auth-20.7.0/res/values-watch-v20/values.xml",
+                    "source": "/Users/shtu/.gradle/caches/9.3.1/transforms/dce62bf43ba82ae2378fbcf775cdcfcb/transformed/play-services-auth-21.1.1/res/values-watch-v20/values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11",
                         "startColumns": "0,0,0,0,0,0,0,0",

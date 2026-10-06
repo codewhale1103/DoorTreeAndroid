@@ -4,7 +4,7 @@
             "outputFile": "codewhale.doortreeandroid.app-mergeDebugResources-75:/values-v26/values-v26.xml",
             "map": [
                 {
-                    "source": "/Users/claudiopietrantonio/.gradle/caches/9.3.1/transforms/ab75ba08e7c7ad37798f4e9204c3f52c/transformed/appcompat-1.7.0/res/values-v26/values-v26.xml",
+                    "source": "/Users/shtu/.gradle/caches/9.3.1/transforms/ab75ba08e7c7ad37798f4e9204c3f52c/transformed/appcompat-1.7.0/res/values-v26/values-v26.xml",
                     "from": {
                         "startLines": "2,3,4,8,12,16",
                         "startColumns": "4,4,4,4,4,4",

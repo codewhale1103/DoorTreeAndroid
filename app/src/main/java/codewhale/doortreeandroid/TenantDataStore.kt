@@ -228,6 +228,10 @@ data class TenantRecord(
                 lastError = snapshot["lastError"].stringValue().ifBlank { null },
                 lastSetupAt = snapshot["lastSetupAt"].stringValue().ifBlank { null },
                 lastSetupError = snapshot["lastSetupError"].stringValue().ifBlank { null },
+                padAuthorizationEmail = snapshot["padAuthorizationEmail"].stringValue().ifBlank { null },
+                padAuthorizationExpiresAt = snapshot["padAuthorizationExpiresAt"].stringValue().ifBlank { null },
+                padAuthorizationId = snapshot["padAuthorizationId"].stringValue().ifBlank { null },
+                padAuthorizationSentAt = snapshot["padAuthorizationSentAt"].stringValue().ifBlank { null },
                 paymentMethodBrand = snapshot["paymentMethodBrand"].stringValue().ifBlank { null },
                 paymentMethodLabel = snapshot["paymentMethodLabel"].stringValue().ifBlank { null },
                 paymentMethodLast4 = snapshot["paymentMethodLast4"].stringValue().ifBlank { null },
@@ -546,6 +550,8 @@ class TenantDataStore(
         private set
     var chatSections by mutableStateOf<List<ChatSection>>(emptyList())
         private set
+    var interacTransferDetails by mutableStateOf<InteracTransferDetails?>(null)
+        private set
     var landlordInteracSettings by mutableStateOf<InteracRecipientSettings?>(null)
         private set
     var landlordRentCollectionSettings by mutableStateOf<LandlordRentCollectionSettings?>(null)
@@ -673,7 +679,7 @@ class TenantDataStore(
                     L("payments.method.bank.subtitle.setup_default")
             }
 
-            return listOf(
+            return bankTransferPaymentMethods() + listOf(
                 PaymentMethodItem(
                     id = "manual-monthly",
                     title = L("payments.method.manual.title"),
@@ -695,7 +701,7 @@ class TenantDataStore(
                     icon = "building.columns.fill",
                     kind = PaymentMethodItem.Kind.AutopayBank
                 )
-            ) + bankTransferPaymentMethods()
+            )
         }
 
     private fun bankTransferPaymentMethods(): List<PaymentMethodItem> {
@@ -957,38 +963,6 @@ class TenantDataStore(
     fun hostedCheckoutUrl(kind: PaymentMethodItem.Kind): String? =
         payableRentEntry(kind)?.hostedCheckoutUrl(kind)
 
-    val interacTransferDetails: InteracTransferDetails?
-        get() {
-            val rentEntry = nextRentEntry ?: currentRentEntry
-            if (!isBankTransferRentCollectionEnabled || rentEntry == null) {
-                return null
-            }
-            val transferEmail = landlordRentCollectionSettings?.bankTransferEmail?.trim().orEmpty()
-            val fallbackSettings = landlordInteracSettings
-            val recipientEmail = if (transferEmail.isNotBlank()) transferEmail else fallbackSettings?.email.orEmpty()
-            if (recipientEmail.isBlank()) {
-                return null
-            }
-
-            val propertyName = rentEntry.propertyName.ifBlank { propertyInfo.name }
-            val unitNumber = rentEntry.unitNumber.ifBlank { tenantRecord?.unitNumber.orEmpty() }.trim()
-            val reference = if (unitNumber.isBlank()) {
-                "$propertyName • ${rentEntry.dueDateDisplay}"
-            } else {
-                "$propertyName • Unit $unitNumber • ${rentEntry.dueDateDisplay}"
-            }
-
-            return InteracTransferDetails(
-                id = rentEntry.id,
-                recipientEmail = recipientEmail,
-                recipientName = fallbackSettings?.displayName?.takeIf { it.isNotBlank() } ?: propertyManagerName,
-                amount = if (rentEntry.balance == "-") rentEntry.amount else rentEntry.balance,
-                dueDate = rentEntry.dueDateDisplay,
-                reference = reference,
-                autodepositEnabled = fallbackSettings?.autodepositEnabled ?: false
-            )
-        }
-
     val notificationCenterItems: List<NotificationCenterItem>
         get() = notices.map { notice ->
             NotificationCenterItem(
@@ -1083,6 +1057,20 @@ class TenantDataStore(
 
             PaymentMethodItem.Kind.OneTimeBankTransfer -> null
         }
+    }
+
+    suspend fun prepareInteracTransfer(): InteracTransferDetails {
+        val uid = activeUid ?: throw IllegalStateException(L("payments.error.sign_in_again"))
+        val result = submitTenantInteracPaymentJob(uid = uid, action = "prepare")
+        val details = result.details
+            ?: throw IllegalStateException("Interac payment details are unavailable. Please try again.")
+        interacTransferDetails = details
+        return details
+    }
+
+    suspend fun markInteracTransferSent(intentId: String) {
+        val uid = activeUid ?: throw IllegalStateException(L("payments.error.sign_in_again"))
+        submitTenantInteracPaymentJob(uid = uid, action = "mark-sent", intentId = intentId)
     }
 
     suspend fun deactivateAutopayForOneTimePaymentIfNeeded() {
@@ -1307,6 +1295,8 @@ class TenantDataStore(
         status: String,
         signatureBitmap: Bitmap? = null
     ) {
+        val signedBitmap = signatureBitmap?.takeIf { !it.isRecycled && it.width > 0 && it.height > 0 }
+            ?: throw IllegalStateException("The signature could not be saved. Please sign again and retry.")
         val uid = activeUid ?: throw IllegalStateException("Unable to update this renewal notice right now.")
         val databasePath = document.databasePath?.trim().orEmpty()
         if (databasePath.isBlank() || !document.isRenewalNotice) {
@@ -1321,14 +1311,13 @@ class TenantDataStore(
         try {
             var signatureStoragePath: String? = null
             var refreshedDocumentUrl: String? = null
-            val tenantReplyPath = uploadRenewalReplyPdf(status, signatureBitmap, document)
+            val tenantReplyPath = uploadRenewalReplyPdf(status, signedBitmap, document)
+            val tenantReplyUrl = storage.reference.child(tenantReplyPath).downloadUrl.await().toString()
 
-            if (signatureBitmap != null) {
-                signatureStoragePath = uploadRenewalSignature(signatureBitmap, document)
-            }
+            signatureStoragePath = uploadRenewalSignature(signedBitmap, document)
 
-            if (status == "accept" && signatureBitmap != null) {
-                refreshedDocumentUrl = uploadSignedRenewalPdf(signatureBitmap, document)
+            if (status == "accept") {
+                refreshedDocumentUrl = uploadSignedRenewalPdf(signedBitmap, document)
             }
 
             val idToken = authSession.ensureValidIdToken()
@@ -1341,6 +1330,7 @@ class TenantDataStore(
                     put("users/$uid/$databasePath/isActionTaken", JsonPrimitive(true))
                     put("users/$uid/$databasePath/read", JsonPrimitive(true))
                     put("users/$uid/$databasePath/tenantReplyPDFfile", JsonPrimitive(tenantReplyPath))
+                    put("users/$uid/$databasePath/tenantReplyPDFDownloadURL", JsonPrimitive(tenantReplyUrl))
                     put("users/$uid/$databasePath/tenantReplyCreatedAt", JsonPrimitive(tenantReplyCreatedAt))
                     signatureStoragePath?.let { path ->
                         put("users/$uid/$databasePath/signatureStoragePath", JsonPrimitive(path))
@@ -1385,7 +1375,17 @@ class TenantDataStore(
                                 put("users/$landlordUid/renewalNotices/sent/$uid/isActionTaken", JsonPrimitive(true))
                                 put("users/$landlordUid/renewalNotices/sent/$uid/read", JsonPrimitive(true))
                                 put("users/$landlordUid/renewalNotices/sent/$uid/tenantReplyPDFfile", JsonPrimitive(tenantReplyPath))
+                                put("users/$landlordUid/renewalNotices/sent/$uid/tenantReplyPDFDownloadURL", JsonPrimitive(tenantReplyUrl))
                                 put("users/$landlordUid/renewalNotices/sent/$uid/tenantReplyCreatedAt", JsonPrimitive(tenantReplyCreatedAt))
+                                put("users/$landlordUid/tenants/$uid/documents/renewalReply-${tenantReplyCreatedAt.replace(Regex("""[.#$/\[\]]"""), "-" )}", buildJsonObject {
+                                    put("name", JsonPrimitive("Tenant Renewal Reply"))
+                                    put("type", JsonPrimitive("application/pdf"))
+                                    put("documentType", JsonPrimitive("Renewal Notice"))
+                                    put("date", JsonPrimitive(tenantReplyCreatedAt))
+                                    put("uploadedBy", JsonPrimitive(tenantProfile.name.ifBlank { "Tenant" }))
+                                    put("url", JsonPrimitive(tenantReplyUrl))
+                                    put("storagePath", JsonPrimitive(tenantReplyPath))
+                                })
                                 signatureStoragePath?.let { path ->
                                     put("users/$landlordUid/renewalNotices/sent/$uid/signatureStoragePath", JsonPrimitive(path))
                                 }
@@ -1703,6 +1703,116 @@ class TenantDataStore(
         val url: String?
     )
 
+    private data class TenantInteracPaymentJobResult(
+        val details: InteracTransferDetails?
+    )
+
+    private suspend fun loadTenantInteracCheckout() {
+        runCatching { prepareInteracTransfer() }
+            .onFailure { error ->
+                interacTransferDetails = null
+                debugMaintenanceRequestLog("Interac checkout unavailable: ${error.localizedMessage ?: "Unknown error"}")
+            }
+    }
+
+    private suspend fun submitTenantInteracPaymentJob(
+        uid: String,
+        action: String,
+        intentId: String? = null
+    ): TenantInteracPaymentJobResult {
+        return withTimeout(30_000) {
+            suspendCancellableCoroutine { continuation ->
+                val queueRef = realtimeDatabase
+                    .child("users")
+                    .child(uid)
+                    .child("interacPaymentQueue")
+                    .push()
+                val payload = mutableMapOf<String, Any>(
+                    "action" to action,
+                    "createdAt" to Instant.now().toString(),
+                    "source" to "android",
+                    "status" to "pending"
+                )
+                if (!intentId.isNullOrBlank()) {
+                    payload["intentId"] = intentId
+                }
+                var listener: ValueEventListener? = null
+
+                fun finish(result: Result<TenantInteracPaymentJobResult>) {
+                    if (!continuation.isActive) return
+                    listener?.let(queueRef::removeEventListener)
+                    result.fold(
+                        onSuccess = { continuation.resume(it) },
+                        onFailure = { continuation.resumeWithException(it) }
+                    )
+                }
+
+                listener = object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        val values = snapshot.value as? Map<*, *> ?: return
+                        when ((values["status"] as? String)?.trim().orEmpty()) {
+                            "completed" -> {
+                                val details = (values["details"] as? Map<*, *>)?.let(::interacTransferDetailsFromJob)
+                                finish(Result.success(TenantInteracPaymentJobResult(details)))
+                            }
+
+                            "failed" -> {
+                                val message = (values["error"] as? String)?.trim().orEmpty()
+                                finish(Result.failure(IllegalStateException(
+                                    message.ifBlank { "Interac payment details could not be prepared." }
+                                )))
+                            }
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        finish(Result.failure(IllegalStateException(error.message)))
+                    }
+                }
+
+                queueRef.addValueEventListener(listener)
+                queueRef.setValue(payload).addOnFailureListener { error ->
+                    finish(Result.failure(error))
+                }
+                continuation.invokeOnCancellation {
+                    listener?.let(queueRef::removeEventListener)
+                }
+            }
+        }
+    }
+
+    private fun interacTransferDetailsFromJob(values: Map<*, *>): InteracTransferDetails? {
+        fun text(key: String): String = (values[key] as? String)?.trim().orEmpty()
+        val intentId = text("intentId")
+        val recipientEmail = text("recipientEmail")
+        val amountValue = (values["amount"] as? Number)?.toDouble()
+            ?: text("amount").toDoubleOrNull()
+        if (intentId.isBlank() || recipientEmail.isBlank() || amountValue == null || amountValue <= 0) {
+            return null
+        }
+        val monthKey = text("monthKey")
+        val rentMonth = runCatching {
+            monthFormatter.format(LocalDate.parse("$monthKey-01", DateTimeFormatter.ISO_LOCAL_DATE))
+        }.getOrElse { monthKey }
+
+        return InteracTransferDetails(
+            id = intentId,
+            chargeId = text("chargeId"),
+            invoiceNumber = text("invoiceNumber"),
+            rentMonth = rentMonth,
+            recipientEmail = recipientEmail,
+            recipientName = text("recipientName"),
+            amount = formatCurrency(amountValue),
+            amountEntry = String.format(Locale.CANADA, "%.2f", amountValue),
+            dueDate = formatDate(text("dueDate")),
+            reference = text("reference"),
+            propertyName = text("propertyName"),
+            unitNumber = text("unitNumber"),
+            autodepositEnabled = values["autodepositEnabled"] as? Boolean ?: false,
+            status = text("status")
+        )
+    }
+
     private suspend fun submitRentPaymentPreferenceJob(
         uid: String,
         action: String
@@ -1814,6 +1924,7 @@ class TenantDataStore(
             notices = emptyList()
             maintenanceRequests = emptyList()
             chatSections = emptyList()
+            interacTransferDetails = null
             landlordInteracSettings = null
             landlordRentCollectionSettings = null
             landlordCompanyName = null
@@ -1841,6 +1952,7 @@ class TenantDataStore(
             notices = emptyList()
             maintenanceRequests = emptyList()
             chatSections = emptyList()
+            interacTransferDetails = null
             landlordInteracSettings = null
             landlordRentCollectionSettings = null
             landlordCompanyName = null
@@ -1867,6 +1979,8 @@ class TenantDataStore(
 
         tenantRecord = parsedTenantRecord
         rentEntries = parseRentEntries(objectValue)
+        interacTransferDetails = null
+        scope.launch { loadTenantInteracCheckout() }
         parkingEntries = parseParkingEntries(objectValue)
         invoices = parseInvoices(objectValue)
         pendingInvoices = invoices.filter { it.isPending }
@@ -1999,6 +2113,7 @@ class TenantDataStore(
         notices = emptyList()
         maintenanceRequests = emptyList()
         chatSections = emptyList()
+        interacTransferDetails = null
         landlordInteracSettings = null
         landlordRentCollectionSettings = null
         landlordCompanyName = null

@@ -101,10 +101,9 @@ fun PayRentView(
             }
 
             if (kind == PaymentMethodItem.Kind.OneTimeBankTransfer) {
-                tenantDataStore.deactivateAutopayForOneTimePaymentIfNeeded()
+                val details = tenantDataStore.prepareInteracTransfer()
                 isStartingPaymentFlow = false
-                transferDetails = tenantDataStore.interacTransferDetails
-                paymentFlowMessage = if (transferDetails == null) L("payments.message.bank_transfer.unavailable") else null
+                transferDetails = details
                 return
             }
 
@@ -140,6 +139,9 @@ fun PayRentView(
     transferDetails?.let { details ->
         InteracTransferSheetView(
             details = details,
+            onMarkSent = {
+                tenantDataStore.markInteracTransferSent(details.id)
+            },
             onDismiss = { transferDetails = null }
         )
     }
@@ -262,7 +264,7 @@ fun PayRentView(
 
                             scope.launch {
                                 runCatching {
-                                    if (!isParkingMode) {
+                                    if (!isParkingMode && method.kind != PaymentMethodItem.Kind.OneTimeBankTransfer) {
                                         tenantDataStore.persistSharedRentPaymentSelection(method.kind)
                                     }
                                 }.onFailure { error ->
@@ -732,8 +734,7 @@ private fun shouldDeactivateAutopayOnSelection(
     kind: PaymentMethodItem.Kind
 ): Boolean {
     return when (kind) {
-        PaymentMethodItem.Kind.ManualMonthly,
-        PaymentMethodItem.Kind.OneTimeBankTransfer ->
+        PaymentMethodItem.Kind.ManualMonthly ->
             tenantDataStore.isCardRentPaymentActive ||
                 tenantDataStore.isBankRentPaymentActive ||
                 tenantDataStore.isBankRentPaymentVerificationPending ||
@@ -741,7 +742,8 @@ private fun shouldDeactivateAutopayOnSelection(
                 (tenantDataStore.currentRentPayment.pendingSetupMethodType == "acss_debit" && !tenantDataStore.hasSavedBankRentPaymentProfile)
 
         PaymentMethodItem.Kind.AutopayCard,
-        PaymentMethodItem.Kind.AutopayBank -> false
+        PaymentMethodItem.Kind.AutopayBank,
+        PaymentMethodItem.Kind.OneTimeBankTransfer -> false
     }
 }
 
