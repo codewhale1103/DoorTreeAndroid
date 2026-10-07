@@ -4,7 +4,7 @@
             "outputFile": "codewhale.doortreeandroid.app-mergeDebugResources-75:/values-xlarge-v4/values-xlarge-v4.xml",
             "map": [
                 {
-                    "source": "/Users/shtu/.gradle/caches/9.3.1/transforms/ab75ba08e7c7ad37798f4e9204c3f52c/transformed/appcompat-1.7.0/res/values-xlarge-v4/values-xlarge-v4.xml",
+                    "source": "/Users/claudiopietrantonio/.gradle/caches/9.3.1/transforms/ab75ba08e7c7ad37798f4e9204c3f52c/transformed/appcompat-1.7.0/res/values-xlarge-v4/values-xlarge-v4.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7",
                         "startColumns": "4,4,4,4,4,4",

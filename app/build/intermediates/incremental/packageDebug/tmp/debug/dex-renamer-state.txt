@@ -1,12 +1,12 @@
-#Mon Oct 05 23:12:20 EDT 2026
-base.0=/Users/shtu/Desktop/All Projects/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeExtDexDebug/classes.dex
-base.1=/Users/shtu/Desktop/All Projects/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeProjectDexDebug/0/classes.dex
-base.2=/Users/shtu/Desktop/All Projects/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeProjectDexDebug/12/classes.dex
-base.3=/Users/shtu/Desktop/All Projects/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeProjectDexDebug/15/classes.dex
-base.4=/Users/shtu/Desktop/All Projects/DoorTreeAndroid/app/build/intermediates/global_synthetics_dex/debug/mergeDebugGlobalSynthetics/classes.dex
-base.5=/Users/shtu/Desktop/All Projects/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeExtDexDebug/classes2.dex
-base.6=/Users/shtu/Desktop/All Projects/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeExtDexDebug/classes3.dex
-base.7=/Users/shtu/Desktop/All Projects/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeExtDexDebug/classes4.dex
+#Tue Oct 06 23:20:31 EDT 2026
+base.0=/Users/claudiopietrantonio/Repos/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeExtDexDebug/classes.dex
+base.1=/Users/claudiopietrantonio/Repos/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeProjectDexDebug/0/classes.dex
+base.2=/Users/claudiopietrantonio/Repos/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeProjectDexDebug/12/classes.dex
+base.3=/Users/claudiopietrantonio/Repos/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeProjectDexDebug/15/classes.dex
+base.4=/Users/claudiopietrantonio/Repos/DoorTreeAndroid/app/build/intermediates/global_synthetics_dex/debug/mergeDebugGlobalSynthetics/classes.dex
+base.5=/Users/claudiopietrantonio/Repos/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeExtDexDebug/classes2.dex
+base.6=/Users/claudiopietrantonio/Repos/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeExtDexDebug/classes3.dex
+base.7=/Users/claudiopietrantonio/Repos/DoorTreeAndroid/app/build/intermediates/dex/debug/mergeExtDexDebug/classes4.dex
 path.0=classes.dex
 path.1=0/classes.dex
 path.2=12/classes.dex

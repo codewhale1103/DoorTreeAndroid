@@ -8,13 +8,13 @@ plugins {
 
 android {
     namespace = "codewhale.doortreeandroid"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "codewhale.doortreeandroid"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 8
+        targetSdk = 36
+        versionCode = 9
         versionName = "1.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
